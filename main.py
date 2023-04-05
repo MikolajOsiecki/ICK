@@ -102,7 +102,8 @@ class MatchingThread (threading.Thread):
 # threads.append(thread2)
 
 # cam_port = "/dev/video3"  #in theory it should use usb camera but it only prints black photo
-cam_port = 0 # 0 for laptop camera
+cam_port = 0 #  laptop camera
+# cam_port = "/dev/video2" # usb camera
 calib_retry_count = 2
 calib_path = '/home/nosfreat/AGH/ICK/calibration/'
 obstacle_path = '/home/nosfreat/AGH/ICK/obstacle/'
