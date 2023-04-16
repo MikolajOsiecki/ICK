@@ -1,7 +1,6 @@
 import cv2
-import numpy as np
-import matplotlib.pyplot as plt
 
+# this file is only for testing your camera
 cam = cv2.VideoCapture("/dev/video2")
 
 # Set smaller resolution
