@@ -135,7 +135,7 @@ def main():
     while True:
         input("Press q to quit")
         if input :
-            print("Quitting")
+            print("Quitting, please wait for all threads to stop")
             for thread in threads:
                 thread.stop()
             for thread in threads:
