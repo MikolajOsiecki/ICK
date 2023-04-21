@@ -29,12 +29,48 @@ baton_path = '/home/nosfreat/AGH/ICK/Baton/'
 
 
 
+
+import json
+import requests 
+#get mached object from Matcher
+
+
+# sender class which instance will be in your program
+class HttpSender:
+    def __init__(self, url, headers=None):
+        self.url = url
+        self.headers = headers or {'Content-type': 'application/json'}
+
+    def send(self, data):
+        response = requests.post(self.url, data=json.dumps(data), headers=self.headers)
+        return response.json()
+
+# your program
+
+#...
+
+
+
 def select_obstacle():
     max_score_id = np.argmax(Scores)
     if MatchCounts[max_score_id] > 1:
         return FoundObstacle[max_score_id]
     else:
         return FoundObstacle[-1]
+
+
+#get x1 from Matcher
+# x1 = Matcher.get_x1()
+# y1 = Matcher.get_y1()
+x1 = 1
+y1 = 1
+url = 'http://localhost:5001/'    
+def sendOBstacle(object, coordinateX, coordinateY, rotationAngle =1):
+        TangibleData = {'id': 2, 'object': object, 'coordinateX': coordinateX, 'coordinateY': coordinateY, 'rotationAngle': rotationAngle}
+
+        sender = HttpSender(url)
+        response = sender.send(TangibleData)
+        print(response)
 
 class ObstaclePhotoThread (threading.Thread):
     """
@@ -57,7 +93,9 @@ class ObstaclePhotoThread (threading.Thread):
         while True:
             if self._stop_event.is_set():
                 break
-            print(select_obstacle())
+            obstacle = select_obstacle()
+            print(obstacle)
+            sendOBstacle(obstacle, x1, y1)
             self.get_photo()
             PhotoEvent.set()
             if self._stop_event.is_set():
@@ -133,7 +171,7 @@ def main():
         thread.start()
     
     while True:
-        input("Press q to quit")
+        input("Press q to quit")    
         if input :
             print("Quitting, please wait for all threads to stop")
             for thread in threads:
@@ -141,7 +179,6 @@ def main():
             for thread in threads:
                 thread.join()
             break
-
 
 if __name__ == "__main__":
     main()
