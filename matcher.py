@@ -50,6 +50,7 @@ class Matcher:
 
             # process only if enough matches are found
             if len(good)>self.min_match_count:
+                print(template + " - Good matches: " + str(len(good)))
                 src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
                 dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
                 M, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC,5.0)
@@ -59,18 +60,28 @@ class Matcher:
                 dst = cv.perspectiveTransform(pts,M)
                 img2 = cv.polylines(img2,[np.int32(dst)],True,255,3, cv.LINE_AA)
 
-                # plt.imshow(img2, 'gray'),plt.show() # show image
                 x1 = dst[0][0][0]
-                y1 = dst[0][0][1]              
+                y1 = dst[0][0][1]         
+                x2 = dst[1][0][0]
+                y2 = dst[1][0][1]   
+                x3 = dst[2][0][0]   
+                y3 = dst[2][0][1]
+                x4 = dst[3][0][0]
+                y4 = dst[3][0][1]
+                     
                 #print coordinates of the left top corner
-                print("x1: " + str(x1))
-                print("y1: " + str(y1))
+                # print("x1: " + str(x1))
+                # print("y1: " + str(y1)) 
+                #get coordinates of center   
+                self.x = (x1 + x2 + x3 + x4)/4
+                self.y = (y1 + y2 + y3 + y4)/4
+                # print("x: " + str(self.x))
 
                 self.score += (len(good))/len(templates)
                 self.match += 1
-                print( f"Match found -" + template )
+                # print( f"Match found -" + template )
             else:
-                print( "Not enough matches are found - {}/{}".format(len(good), self.min_match_count) )
+                # print( "Not enough matches are found - {}/{}".format(len(good), self.min_match_count) )
                 # matchesMask = None # needed only for comparison
                 self.score += (len(good))/len(templates)
                 self.match += 0
