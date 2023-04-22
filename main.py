@@ -14,6 +14,7 @@ from matcher import Matcher
 PhotoEvent = Event()
 MatchCounts = [0,0,0]
 Scores = [0,0,0]
+Coordinates = [(0,0),(0,0),(0,0)]
 FoundObstacle = ["Prostokat(Nie)", "Trojkat(Niebieski)", "Kolo(Zielone)", "None"]   #list of names, can be changed
 threads = []
 
@@ -45,25 +46,16 @@ class HttpSender:
         response = requests.post(self.url, data=json.dumps(data), headers=self.headers)
         return response.json()
 
-# your program
-
-#...
-
 
 
 def select_obstacle():
     max_score_id = np.argmax(Scores)
     if MatchCounts[max_score_id] > 0:
-        return FoundObstacle[max_score_id]
+        return FoundObstacle[max_score_id], Coordinates[max_score_id][0], Coordinates[max_score_id][1]
     else:
         return FoundObstacle[-1]
 
 
-#get x1 from Matcher
-# x1 = Matcher.get_x1()
-# y1 = Matcher.get_y1()
-x1 = 1
-y1 = 1
 url = 'http://localhost:5001/'    
 def sendOBstacle(object, coordinateX, coordinateY, rotationAngle =1):
         TangibleData = {'id': 2, 'object': object, 'coordinateX': coordinateX, 'coordinateY': coordinateY, 'rotationAngle': rotationAngle}
@@ -93,11 +85,14 @@ class ObstaclePhotoThread (threading.Thread):
         while True:
             if self._stop_event.is_set():
                 break
-            obstacle = select_obstacle()
+            x, y = 0, 0 # reset coordinates
+            obstacle, x, y = select_obstacle()
             print(obstacle)
             print("match count: " + str(MatchCounts))
             print("scores: " + str(Scores))
-            # sendOBstacle(obstacle, x1, y1)
+            print("coordinates: " + str(Coordinates))
+            print("Obstacle x: " + str(x) + "\ny: " + str(y))
+            # sendOBstacle(obstacle, x, y)
             self.get_photo()
             PhotoEvent.set()
             if self._stop_event.is_set():
@@ -146,6 +141,7 @@ class MatchingThread (threading.Thread):
         score, match_count = self.matcher.match_phots()
         Scores[self.threadID] = score
         MatchCounts[self.threadID] = match_count
+        Coordinates[self.threadID] = self.matcher.get_coordinates()
 
 ####################################################
 

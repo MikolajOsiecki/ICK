@@ -95,4 +95,13 @@ class Matcher:
             # plt.imshow(img3, 'gray'),plt.show()
         return self.score, self.match
 
+    def get_coordinates(self):
+        """Returns coordinates of the center of the match.
+
+        Returns:
+            x: x coordinate of the center of the match
+            y: y coordinate of the center of the match
+        """
+        return (self.x, self.y)
+
 
