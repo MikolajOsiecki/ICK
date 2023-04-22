@@ -76,7 +76,7 @@ class Calibration:
         self.imgpoints = [] # 2d points in image plane.
         img_names = []
         images = glob.glob(str(self.save_location) +'*.jpg')
-        print(images)
+        # print(images)
         calibrated = False
         for fname in images:
             img = cv2.imread(fname)
