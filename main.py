@@ -6,17 +6,14 @@ import scipy
 import glob
 import time
 import threading
+import json
+import requests 
 from threading import Event
 from Calibration import Calibration
 from Obsatcle_Photo import Obstacle_Photo
 from matcher import Matcher
 
-PhotoEvent = Event()
-MatchCounts = [0,0,0]
-Scores = [0,0,0]
-Coordinates = [(0,0),(0,0),(0,0)]
-FoundObstacle = ["Prostokat(Nie)", "Trojkat(Niebieski)", "Kolo(Zielone)", "None"]   #list of names, can be changed
-threads = []
+
 
 # cam_port = 0 #  laptop camera
 cam_port = "/dev/video2" # usb camera
@@ -30,30 +27,18 @@ baton_path = '/home/nosfreat/AGH/ICK/Baton/'
 
 
 
-
-import json
-import requests 
-#get mached object from Matcher
-
-
-# sender class which instance will be in your program
-class HttpSender:
-    def __init__(self, url, headers=None):
-        self.url = url
-        self.headers = headers or {'Content-type': 'application/json'}
-
-    def send(self, data):
-        response = requests.post(self.url, data=json.dumps(data), headers=self.headers)
-        return response.json()
-
-
-
+PhotoEvent = Event()
+FoundObstacle = ["Prostokat(Nie)", "Trojkat(Niebieski)", "Kolo(Zielone)", "None"]   #list of names, can be changed
+threads = []
+MatchCounts = [0,0,0]
+Scores = [0,0,0]
+Coordinates = [(0,0),(0,0),(0,0)]
 def select_obstacle():
     max_score_id = np.argmax(Scores)
     if MatchCounts[max_score_id] > 0:
         return FoundObstacle[max_score_id], Coordinates[max_score_id][0], Coordinates[max_score_id][1]
     else:
-        return FoundObstacle[-1]
+        return FoundObstacle[-1], 0, 0
 
 
 url = 'http://localhost:5001/'    
@@ -63,6 +48,15 @@ def sendOBstacle(object, coordinateX, coordinateY, rotationAngle =1):
         sender = HttpSender(url)
         response = sender.send(TangibleData)
         print(response)
+
+class HttpSender:
+    def __init__(self, url, headers=None):
+        self.url = url
+        self.headers = headers or {'Content-type': 'application/json'}
+
+    def send(self, data):
+        response = requests.post(self.url, data=json.dumps(data), headers=self.headers)
+        return response.json()
 
 class ObstaclePhotoThread (threading.Thread):
     """
@@ -85,20 +79,21 @@ class ObstaclePhotoThread (threading.Thread):
         while True:
             if self._stop_event.is_set():
                 break
-            x, y = 0, 0 # reset coordinates
-            obstacle, x, y = select_obstacle()
-            print(obstacle)
-            print("match count: " + str(MatchCounts))
-            print("scores: " + str(Scores))
-            print("coordinates: " + str(Coordinates))
-            print("Obstacle x: " + str(x) + "\ny: " + str(y))
-            # sendOBstacle(obstacle, x, y)
+
             self.get_photo()
             PhotoEvent.set()
             if self._stop_event.is_set():
                 break
             time.sleep(1)
             PhotoEvent.clear()
+            x, y = 0, 0 # reset coordinates
+            obstacle, x, y = select_obstacle()
+            # sendOBstacle(obstacle, x, y)
+            print(obstacle)
+            print("match count: " + str(MatchCounts))
+            print("scores: " + str(Scores))
+            print("coordinates: " + str(Coordinates))
+            print("Obstacle x: " + str(x) + "\ny: " + str(y))
             time.sleep(14)
 
     def stop(self):
@@ -130,7 +125,7 @@ class MatchingThread (threading.Thread):
             PhotoEvent.wait()
             if self._stop_event.is_set():
                 break
-            print( "Matching " + self.name)
+            # print( "Matching " + self.name)
             self.match_target()
 
     def stop(self):
@@ -159,11 +154,11 @@ def main():
 
     PhotoThread = ObstaclePhotoThread(99, "ObstaclePhoto", Obstacle = Obstacle_Photo(cam_port=cam_port, save_path=obstacle_path, mtx = mtx, dist = dist, newcameramtx = newcameramtx, roi = roi))
     threads.append(PhotoThread)
-    MatchThreadKubek = MatchingThread(0, "MatchKubek", matcher=Matcher(template_path=kubek_path, img_path=path_for_matcher, min_match_count=100))
+    MatchThreadKubek = MatchingThread(0, "MatchNie", matcher=Matcher(name = "MatchNie",template_path=kubek_path, img_path=path_for_matcher, min_match_count=100))
     threads.append(MatchThreadKubek)
-    MatchThreadButelka = MatchingThread(1, "MatchButelka", matcher=Matcher(template_path=butelka_path, img_path=path_for_matcher, min_match_count=100))
+    MatchThreadButelka = MatchingThread(1, "MatchCzerwone", matcher=Matcher(name = "MatchCzerwone",template_path=butelka_path, img_path=path_for_matcher, min_match_count=100))
     threads.append(MatchThreadButelka)
-    MatchThreadBaton = MatchingThread(2, "MatchBaton", matcher=Matcher(template_path=baton_path, img_path=path_for_matcher, min_match_count=100))
+    MatchThreadBaton = MatchingThread(2, "MatchZielone", matcher=Matcher(name = "MatchZielone",template_path=baton_path, img_path=path_for_matcher, min_match_count=100))
     threads.append(MatchThreadBaton)
     for thread in threads:
         thread.start()
