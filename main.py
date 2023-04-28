@@ -86,6 +86,7 @@ class ObstaclePhotoThread (threading.Thread):
                 break
             time.sleep(1)
             PhotoEvent.clear()
+            time.sleep(14)
             x, y = 0, 0 # reset coordinates
             obstacle, x, y = select_obstacle()
             # sendOBstacle(obstacle, x, y)
@@ -94,7 +95,7 @@ class ObstaclePhotoThread (threading.Thread):
             print("scores: " + str(Scores))
             print("coordinates: " + str(Coordinates))
             print("Obstacle x: " + str(x) + "\ny: " + str(y))
-            time.sleep(14)
+
 
     def stop(self):
         self._stop_event.set()
