@@ -72,8 +72,8 @@ class Matcher:
                 y4 = dst[3][0][1]
                      
                 #get coordinates of center   
-                self.x = np.floor((x1 + x2 + x3 + x4)/4)
-                self.y = np.floor((y1 + y2 + y3 + y4)/4)
+                self.x = np.floor(((x1 + x2 + x3 + x4)/4)/100)
+                self.y = np.floor(((y1 + y2 + y3 + y4)/4)/100)
                 # print("x: " + str(self.x))
 
                 self.score += (len(good))/len(templates)

@@ -1,9 +1,6 @@
-import cv2
+
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib
-import scipy
-import glob
 import time
 import threading
 import json
@@ -41,22 +38,29 @@ def select_obstacle():
         return FoundObstacle[-1], 0, 0
 
 
-url = 'http://localhost:5001/'    
+url = 'http://192.168.1.150:5001/'    
 def sendOBstacle(object, coordinateX, coordinateY, rotationAngle =1):
-        TangibleData = {'id': 2, 'object': object, 'coordinateX': coordinateX, 'coordinateY': coordinateY, 'rotationAngle': rotationAngle}
-
-        sender = HttpSender(url)
-        response = sender.send(TangibleData)
+        TangibleData = {'id': 2, 
+                        'object': object, 
+                        'coordinateX': coordinateX, 
+                        'coordinateY': coordinateY, 
+                        'rotationAngle': rotationAngle}
+        print("json")
+        json_data = json.dumps(TangibleData)
+        print("json_data")
+        response = requests.post(url, data=json_data)
+        # sender = HttpSender(url)
+        # response = sender.send(TangibleData)
         print(response)
 
-class HttpSender:
-    def __init__(self, url, headers=None):
-        self.url = url
-        self.headers = headers or {'Content-type': 'application/json'}
+# class HttpSender:
+#     def __init__(self, url, headers=None):
+#         self.url = url
+#         self.headers = headers or {'Content-type': 'application/json'}
 
-    def send(self, data):
-        response = requests.post(self.url, data=json.dumps(data), headers=self.headers)
-        return response.json()
+#     def send(self, data):
+#         response = requests.post(self.url, data=json.dumps(data), headers=self.headers)
+#         return response.json()
 
 class ObstaclePhotoThread (threading.Thread):
     """
@@ -88,12 +92,13 @@ class ObstaclePhotoThread (threading.Thread):
             PhotoEvent.clear()
             x, y = 0, 0 # reset coordinates
             obstacle, x, y = select_obstacle()
-            # sendOBstacle(obstacle, x, y)
             print(obstacle)
             print("match count: " + str(MatchCounts))
             print("scores: " + str(Scores))
             print("coordinates: " + str(Coordinates))
             print("Obstacle x: " + str(x) + "\ny: " + str(y))
+            print("sending")
+            sendOBstacle(obstacle, x, y)
             time.sleep(14)
 
     def stop(self):
