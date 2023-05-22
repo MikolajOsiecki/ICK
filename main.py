@@ -90,6 +90,7 @@ class ObstaclePhotoThread (threading.Thread):
                 break
             time.sleep(1)
             PhotoEvent.clear()
+            time.sleep(14)
             x, y = 0, 0 # reset coordinates
             obstacle, x, y = select_obstacle()
             print(obstacle)
